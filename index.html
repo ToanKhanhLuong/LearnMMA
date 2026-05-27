@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Bãi Đỗ Xe Thông Minh</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary-color: #4e73df; --secondary-color: #858796; --light-bg: #f8f9fc; --sidebar-width: 260px; }
+        body { background-color: var(--light-bg); font-family: 'Nunito', sans-serif; overflow-x: hidden; }
+        
+        #login-section { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: white; width: 400px; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
+        .login-logo-img { max-width: 100px; margin-bottom: 20px; border-radius: 50%; }
+        .login-btn { width: 100%; padding: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; }
+
+        #sidebar-wrapper { min-height: 100vh; width: var(--sidebar-width); background-color: #fff; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15); position: fixed; top: 0; left: 0; z-index: 1000; overflow-y: auto; }
+        .sidebar-heading { padding: 1.5rem 1rem; text-align: center; border-bottom: 1px solid #e3e6f0; display: flex; flex-direction: column; align-items: center; }
+        .sidebar-logo-img { max-width: 60px; margin-bottom: 10px; border-radius: 50%; }
+        
+        .sidebar-brand-text { 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700; 
+            font-size: 1.35rem; 
+            color: #2c3e50; 
+            letter-spacing: 0.5px; 
+            margin-top: 5px; 
+        }
+
+        .list-group-item { border: none; padding: 0.8rem 1.5rem; color: #5a5c69; font-weight: 600; transition: 0.2s; cursor: pointer; display: flex; align-items: center; }
+        .list-group-item:hover { background-color: #eaecf4; color: var(--primary-color); }
+        .list-group-item.active { background-color: var(--primary-color); color: #fff; }
+        .list-group-item i { width: 25px; text-align: center; margin-right: 10px; }
+        .sub-menu { background-color: #f8f9fc; border-left: 4px solid var(--primary-color); }
+        .sub-menu .list-group-item { padding-left: 3.5rem; font-size: 0.9rem; font-weight: normal; background-color: transparent; }
+        .sub-menu .list-group-item:hover { color: var(--primary-color); font-weight: bold; }
+        .sub-menu .list-group-item.active { color: var(--primary-color); font-weight: bold; background-color: #eaecf4; }
+        .dropdown-arrow { margin-left: auto; transition: transform 0.3s; }
+        .collapsed .dropdown-arrow { transform: rotate(-90deg); }
+        #page-content-wrapper { margin-left: var(--sidebar-width); padding: 20px; width: calc(100% - var(--sidebar-width)); }
+        .card { border: none; border-radius: 0.75rem; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05); margin-bottom: 20px; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #e3e6f0; padding: 1rem 1.25rem; font-weight: bold; color: var(--primary-color); }
+        .camera-feed { background-color: #000; height: 250px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: #fff; position: relative; margin-bottom: 15px; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .status-online { background-color: #d1fae5; color: #065f46; } .status-offline { background-color: #fee2e2; color: #991b1b; }
+        .cursor-pointer { cursor: pointer; }
+        
+        .preview-media { max-width: 100%; height: 150px; object-fit: cover; border-radius: 5px; border: 1px dashed #ccc; padding: 2px; margin-top: 10px; display: none; }
+        .preview-media.active { display: block; }
+
+        #google_translate_element { width: 0; height: 0; overflow: hidden; position: absolute; left: -9999px; }
+        .goog-te-banner-frame { display: none !important; } .goog-tooltip { display: none !important; }
+        body { top: 0 !important; }
+    </style>
+</head>
+<body>
+
+<div id="login-section">
+    <div class="login-card">
+        <img src="https://via.placeholder.com/100?text=Logo" id="loginLogoDisplay" class="login-logo-img" alt="Logo">
+        <h3 class="mb-4" data-i18n="system_name">Hệ Thống Quản Lý Bãi Đỗ Xe Thông Minh</h3>
+        <form onsubmit="event.preventDefault(); performLogin();">
+            <div class="mb-3 text-start"><label class="form-label">Username</label><input type="text" id="loginUser" class="form-control" value="admin"></div>
+            <div class="mb-3 text-start"><label class="form-label">Password</label><input type="password" id="loginPass" class="form-control" value="123456"></div>
+            <div id="loginError" class="text-danger mb-3 d-none"><small>Sai thông tin đăng nhập!</small></div>
+            <button type="submit" class="btn btn-primary login-btn">ĐĂNG NHẬP</button>
+        </form>
+    </div>
+</div>
+
+<div class="d-flex d-none" id="wrapper">
+    <div id="sidebar-wrapper">
+        <div class="sidebar-heading">
+            <img src="https://via.placeholder.com/60?text=P" id="sidebarLogoDisplay" class="sidebar-logo-img" alt="Logo">
+            <span class="sidebar-brand-text">Smart Parking</span>
+        </div>
+        <div class="list-group list-group-flush">
+            <a class="list-group-item list-group-item-action active" onclick="showSection('section-dashboard', this)"><i class="fas fa-tachometer-alt"></i> <span data-i18n="menu_dashboard">Tổng Quan</span></a>
+            <a class="list-group-item list-group-item-action" onclick="showSection('section-liveview', this)"><i class="fas fa-video"></i> <span data-i18n="menu_liveview">Giám Sát</span></a>
+            <a class="list-group-item list-group-item-action collapsed" data-bs-toggle="collapse" href="#menu-vehicle"><i class="fas fa-car"></i> <span data-i18n="menu_vehicle">Quản Lý Xe</span> <i class="fas fa-chevron-down dropdown-arrow"></i></a>
+            <div class="collapse sub-menu" id="menu-vehicle">
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-vehicle-list', this)" data-i18n="menu_vehicle_list">Danh Sách Xe</a>
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-vehicle-register', this)" data-i18n="menu_vehicle_reg">Đăng Ký Mới</a>
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-vehicle-renewal', this)" data-i18n="menu_vehicle_renew">Gia Hạn Vé</a>
+            </div>
+            <a class="list-group-item list-group-item-action" onclick="showSection('section-reports', this)"><i class="fas fa-chart-line"></i> <span data-i18n="menu_report">Báo Cáo & Doanh Thu</span></a>
+            <a class="list-group-item list-group-item-action" onclick="showSection('section-equipment', this)"><i class="fas fa-server"></i> <span data-i18n="menu_equipment">Quản Lý Thiết Bị</span></a>
+            <a class="list-group-item list-group-item-action collapsed" data-bs-toggle="collapse" href="#menu-settings"><i class="fas fa-cogs"></i> <span data-i18n="menu_setting">Cấu Hình Hệ Thống</span> <i class="fas fa-chevron-down dropdown-arrow"></i></a>
+            <div class="collapse sub-menu" id="menu-settings">
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-setting-general', this)" data-i18n="menu_st_general">Thông Tin Bãi Xe</a>
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-setting-rate', this)" data-i18n="menu_st_rate">Cấu Hình Giá Vé</a>
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-setting-screen', this)">Cấu Hình Màn Hình</a>
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-setting-users', this)" data-i18n="menu_st_users">Tài Khoản Nhân Viên</a>
+                <a class="list-group-item list-group-item-action" onclick="showSection('section-setting-system', this)" data-i18n="menu_st_system">Thiết Lập Hệ Thống</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-content-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white mb-4 shadow-sm rounded">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1 text-secondary" id="systemNameDisplay">Hệ Thống Quản Lý Bãi Đỗ Xe Thông Minh</span>
+                <div class="d-flex align-items-center">
+                    <div id="google_translate_element"></div>
+                    <div class="dropdown me-4">
+                        <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" id="languageDropdown" data-bs-toggle="dropdown"><i class="fas fa-globe me-2"></i> <span id="currentLang">Tiếng Việt</span></button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item cursor-pointer" onclick="setLanguage('vi')">🇻🇳 Tiếng Việt</a></li>
+                            <li><a class="dropdown-item cursor-pointer" onclick="setLanguage('en')">🇺🇸 English</a></li>
+                            <li><a class="dropdown-item cursor-pointer" onclick="setLanguage('cn')">🇨🇳 中文</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <div class="d-flex align-items-center cursor-pointer" data-bs-toggle="dropdown">
+                            <div class="text-end me-3"><small class="d-block text-muted" data-i18n="hello">Xin chào,</small><span class="fw-bold" id="userDisplay">Admin Manager</span></div>
+                            <i class="fas fa-chevron-down ms-1 text-secondary"></i>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="showSection('section-setting-users')"><i class="fas fa-user-cog fa-sm fa-fw mr-2 text-gray-400"></i> Quản lý tài khoản</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="performLogout()"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2"></i> Đăng Xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div id="section-dashboard" class="content-view">
+            <h3 class="mb-3 text-gray-800" data-i18n="menu_dashboard">Tổng Quan</h3>
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4"><div class="card border-left-primary h-100 py-2"><div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1" data-i18n="card_car_onsite">Xe Trong Bãi</div><div class="h5 mb-0 font-weight-bold text-gray-800"><span id="dashCount">145</span> / <span id="dashCapacity">500</span></div></div></div></div>
+                <div class="col-xl-3 col-md-6 mb-4"><div class="card border-left-success h-100 py-2"><div class="card-body"><div class="text-xs font-weight-bold text-success text-uppercase mb-1" data-i18n="card_revenue">Doanh Thu Ngày</div><div class="h5 mb-0 font-weight-bold text-gray-800">2,540,000 VNĐ</div></div></div></div>
+                <div class="col-xl-3 col-md-6 mb-4"><div class="card border-left-info h-100 py-2"><div class="card-body"><div class="text-xs font-weight-bold text-info text-uppercase mb-1" data-i18n="card_entry">Lượt Xe Vào</div><div class="h5 mb-0 font-weight-bold text-gray-800">320</div></div></div></div>
+                <div class="col-xl-3 col-md-6 mb-4"><div class="card border-left-warning h-100 py-2"><div class="card-body"><div class="text-xs font-weight-bold text-warning text-uppercase mb-1" data-i18n="card_alert">Cảnh Báo</div><div class="h5 mb-0 font-weight-bold text-gray-800">0</div></div></div></div>
+            </div>
+            <div class="card shadow mb-4"><div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary" data-i18n="chart_traffic">Biểu Đồ Lưu Lượng Xe</h6></div><div class="card-body"><canvas id="trafficChart" height="100"></canvas></div></div>
+        </div>
+
+        <div id="section-liveview" class="content-view d-none"><h3 class="mb-4 text-gray-800" data-i18n="menu_liveview">Giám Sát</h3><div class="row"><div class="col-md-6 mb-4"><div class="card"><div class="card-header">Làn Vào</div><div class="card-body"><div class="camera-feed"><i class="fas fa-video fa-3x"></i><span class="ms-2">CAM-01 LIVE</span></div><button class="btn btn-success w-100">Mở Barie</button></div></div></div><div class="col-md-6 mb-4"><div class="card"><div class="card-header">Làn Ra</div><div class="card-body"><div class="camera-feed"><i class="fas fa-video fa-3x"></i><span class="ms-2">CAM-02 LIVE</span></div><button class="btn btn-danger w-100">Mở Barie</button></div></div></div></div></div>
+        
+        <div id="section-vehicle-list" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_vehicle_list">Danh Sách Xe</h3>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Dữ liệu phương tiện</h6>
+                    <button class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6"><input type="text" id="filterInput" class="form-control" placeholder="Nhập biển số hoặc tên chủ xe..."></div>
+                        <div class="col-md-3"><select class="form-select" id="filterType"><option value="all">Tất cả</option><option value="Ô tô">Ô tô</option><option value="Xe máy">Xe máy</option></select></div>
+                        <div class="col-md-auto"><button class="btn btn-secondary" onclick="filterTable()"><i class="fas fa-search"></i> Tìm kiếm</button></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="vehicleTable">
+                            <thead class="table-light"><tr><th>Biển Số</th><th>Chủ Xe</th><th>Loại Xe</th><th>Loại Thẻ</th><th>Giờ Vào</th><th>Giờ Ra</th><th>Hết Hạn</th><th>Hành Động</th></tr></thead>
+                            <tbody>
+                                <tr data-type="Ô tô" data-cccd="00123456789"><td>30F-555.66</td><td>Nguyễn Văn A</td><td>Ô tô</td><td data-card="Vé Tháng"><span class="badge bg-primary">Vé Tháng</span></td><td>08:30 20/10</td><td>-</td><td>30/12/2026</td><td><button class="btn btn-sm btn-info text-white" onclick="editRow(this)"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteRow(this)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr data-type="Xe máy" data-cccd="00987654321"><td>29D1-123.45</td><td>Trần Thị B</td><td>Xe máy</td><td data-card="Thẻ VIP"><span class="badge bg-secondary">Thẻ VIP</span></td><td>09:15 20/10</td><td>10:00 20/10</td><td>-</td><td><button class="btn btn-sm btn-info text-white" onclick="editRow(this)"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteRow(this)"><i class="fas fa-trash"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-vehicle-register" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_vehicle_reg">Đăng Ký Mới</h3>
+            <div class="card"><div class="card-header">Thông Tin Đăng Ký</div><div class="card-body"><form id="regForm">
+                <div class="row mb-3"><div class="col-md-6"><label class="form-label">Biển Số</label><input type="text" id="regPlate" class="form-control" placeholder="Nhập biển số "></div><div class="col-md-6"><label class="form-label">Chủ Xe</label><input type="text" id="regOwner" class="form-control" placeholder="Nhập tên chủ xe "></div></div>
+                <div class="row mb-3"><div class="col-md-6"><label class="form-label">CCCD / CMND</label><input type="text" id="regCCCD" class="form-control" placeholder="Nhập số CCCD"></div><div class="col-md-6"><label class="form-label">SĐT</label><input type="text" id="regPhone" class="form-control" placeholder="Nhập SĐT"></div></div>
+                <div class="row mb-3"><div class="col-md-6"><label class="form-label">Loại Xe</label><select id="regType" class="form-select"><option>Ô tô</option><option>Xe máy</option></select></div><div class="col-md-6"><label class="form-label">Loại Thẻ</label><select id="regCard" class="form-select"><option>Vé Tháng</option><option>Thẻ VIP</option></select></div></div>
+                <button type="button" class="btn btn-primary" onclick="saveNewVehicle()">Đăng Ký</button>
+            </form></div></div>
+        </div>
+
+        <div id="section-vehicle-renewal" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_vehicle_renew">Gia Hạn Vé</h3>
+            <div class="card"><div class="card-header">Tìm Kiếm & Gia Hạn</div><div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="renewalSearchInput" class="form-control" placeholder="Nhập Biển số, SĐT hoặc CCCD để tìm kiếm">
+                    <button class="btn btn-outline-secondary" onclick="searchRenewal()">Tìm Kiếm</button>
+                </div>
+                <div id="renewalResult" class="border p-3 rounded bg-light d-none"><h5 class="text-success">Tìm thấy xe!</h5><div class="row mt-3"><div class="col-md-6"><p><strong>Biển số:</strong> <span id="resPlate"></span></p><p><strong>Chủ xe:</strong> <span id="resOwner"></span></p></div><div class="col-md-6"><p><strong>Hết hạn:</strong> <span id="resExpiry" class="text-danger fw-bold"></span></p><div class="input-group"><span class="input-group-text">Gia hạn:</span><select class="form-select" id="extendMonth"><option value="1">1 Tháng</option><option value="6">6 Tháng</option><option value="12">1 Năm</option></select><button class="btn btn-success" onclick="confirmRenewal()">Xác Nhận</button></div></div></div></div><div id="renewalError" class="alert alert-danger d-none mt-2">Không tìm thấy thông tin phù hợp!</div></div></div>
+        </div>
+
+        <div id="section-reports" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_report">Báo Cáo & Thống Kê</h3>
+            <ul class="nav nav-tabs mb-4" id="reportTabs">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#rp-overview">Tổng Hợp Doanh Thu</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#rp-logs">Nhật Ký Ra Vào (Logs)</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#rp-alarm">Lịch Sử Cảnh Báo</button></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="rp-overview">
+                    <div class="row"><div class="col-md-8"><div class="card shadow mb-4"><div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Biểu Đồ Doanh Thu Tuần</h6></div><div class="card-body"><canvas id="revenueChart" height="150"></canvas></div></div></div><div class="col-md-4"><div class="card shadow mb-4"><div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Tỷ Lệ Phương Tiện</h6></div><div class="card-body"><canvas id="vehicleTypeChart" height="200"></canvas></div></div></div></div>
+                    <div class="card"><div class="card-header">Chi Tiết Doanh Thu (Tháng 10/2023)</div><div class="card-body"><table class="table table-striped table-hover"><thead><tr><th>Ngày</th><th>Vé Lượt (VNĐ)</th><th>Vé Tháng (VNĐ)</th><th>Tổng Thu (VNĐ)</th></tr></thead><tbody id="revenueTableBody"></tbody></table></div></div>
+                </div>
+                <div class="tab-pane fade" id="rp-logs"><div class="card"><div class="card-header bg-info text-white d-flex justify-content-between align-items-center"><span><i class="fas fa-history"></i> Access Control Logs</span><div class="d-flex gap-2"><input type="date" class="form-control form-control-sm"><button class="btn btn-sm btn-light text-dark">Lọc</button></div></div><div class="card-body"><table class="table table-bordered table-hover text-center align-middle"><thead class="table-light"><tr><th>Thời Gian</th><th>Biển Số</th><th>Loại Xe</th><th>Cổng</th><th>Hình Ảnh</th><th>Trạng Thái</th></tr></thead><tbody id="logsTableBody"></tbody></table></div></div></div>
+                <div class="tab-pane fade" id="rp-alarm"><div class="card"><div class="card-header bg-danger text-white">Lịch Sử Cảnh Báo An Ninh</div><div class="card-body"><div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> 10:15 25/10 - Biển số 29A-999.99 không khớp thẻ (Làn ra)</div><div class="alert alert-danger"><i class="fas fa-ban"></i> 09:30 24/10 - Cố tình vượt rào chắn (Làn vào)</div></div></div></div>
+            </div>
+        </div>
+
+        <div id="section-equipment" class="content-view d-none"><h3 class="mb-4 text-gray-800" data-i18n="menu_equipment">Thiết Bị</h3><div class="row"><div class="col-md-3"><div class="card text-center p-3"><i class="fas fa-camera fa-3x text-success mb-2"></i><h5>LPR Camera</h5><span class="status-badge status-online">Online</span></div></div></div></div>
+
+        <div id="section-setting-general" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_st_general">Thông Tin Bãi Xe</h3>
+            <div class="card">
+                <div class="card-header">Thiết Lập Cơ Bản</div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12"><label class="form-label">Logo Website / Avatar</label><div class="d-flex align-items-center"><img src="https://via.placeholder.com/60?text=P" id="previewLogoSetting" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd;"><div><input type="file" id="logoUploadInput" class="form-control" accept="image/*" onchange="previewLogo(this)"><small class="text-muted">Chọn ảnh vuông (.png, .jpg).</small></div></div></div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3"><div class="col-md-6"><label class="form-label">Tên Bãi Xe</label><input type="text" id="confParkName" class="form-control" value="Hệ Thống Quản Lý Bãi Đỗ Xe Thông Minh"></div><div class="col-md-6"><label class="form-label">Địa Chỉ</label><input type="text" class="form-control" value="123 Đường ABC, Hà Nội"></div></div>
+                    <div class="row mb-3"><div class="col-md-4"><label class="form-label">Tổng Sức Chứa</label><input type="number" id="confCapacity" class="form-control" value="500"></div><div class="col-md-4"><label class="form-label">Tiền Tệ</label><input type="text" class="form-control" value="VNĐ" readonly></div><div class="col-md-4"><label class="form-label">Màn hình LED</label><input type="text" class="form-control" value="XIN CHAO - WELCOME"></div></div>
+                    <button class="btn btn-primary" onclick="saveGeneralConfig()">Lưu Thông Tin</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-setting-screen" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800">Cấu Hình Màn Hình Barrier</h3>
+            <div class="row">
+                <div class="col-md-6"><div class="card mb-4"><div class="card-header bg-success text-white">Màn Hình Lối Vào</div><div class="card-body"><div class="mb-3"><label class="form-label">Hình Ảnh </label><input type="file" class="form-control" accept="image/*" onchange="previewMedia(this, 'prevImgIn')"><img id="prevImgIn" class="preview-media" src="#"></div><div class="mb-3"><label class="form-label">Video </label><input type="file" class="form-control" accept="video/*" onchange="previewMedia(this, 'prevVidIn')"><video id="prevVidIn" class="preview-media" controls></video></div></div></div></div>
+                <div class="col-md-6"><div class="card mb-4"><div class="card-header bg-danger text-white">Màn Hình Lối Ra</div><div class="card-body"><div class="mb-3"><label class="form-label">Hình Ảnh </label><input type="file" class="form-control" accept="image/*" onchange="previewMedia(this, 'prevImgOut')"><img id="prevImgOut" class="preview-media" src="#"></div><div class="mb-3"><label class="form-label">Video </label><input type="file" class="form-control" accept="video/*" onchange="previewMedia(this, 'prevVidOut')"><video id="prevVidOut" class="preview-media" controls></video></div></div></div></div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('Đã lưu cấu hình màn hình!')"><i class="fas fa-save"></i> Lưu Cấu Hình</button>
+        </div>
+
+        <div id="section-setting-rate" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_st_rate">Cài Đặt Giá Vé</h3>
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">Ô tô</div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3"><label>2 Giờ Đầu</label><input type="number" class="form-control" value="25000"></div>
+                        <div class="col-md-3"><label>Mỗi Giờ Sau</label><input type="number" class="form-control" value="10000"></div>
+                        <div class="col-md-3"><label>Qua Đêm</label><input type="number" class="form-control" value="100000"></div>
+                        <div class="col-md-3"><label>Vé Tháng</label><input type="number" class="form-control" value="1500000"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header bg-secondary text-white">Xe Máy</div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4"><label>Vé Lượt (4h)</label><input type="number" class="form-control" value="5000"></div>
+                        <div class="col-md-4"><label>Qua Đêm</label><input type="number" class="form-control" value="10000"></div>
+                        <div class="col-md-4"><label>Vé Tháng</label><input type="number" class="form-control" value="120000"></div>
+                    </div>
+                    <button class="btn btn-success" onclick="alert('Đã cập nhật bảng giá!')">Cập Nhật</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-setting-users" class="content-view d-none"><h3 class="mb-4 text-gray-800" data-i18n="menu_st_users">Quản Lý Nhân Viên</h3><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><span>Danh Sách Tài Khoản</span><button class="btn btn-sm btn-primary" onclick="openUserModal()"><i class="fas fa-user-plus"></i> Thêm NV</button></div><div class="card-body"><table class="table table-striped table-hover align-middle" id="userTable"><thead class="table-light"><tr><th>ID</th><th>User</th><th>Họ Tên</th><th>Mật Khẩu</th><th>Role</th><th>Thao Tác</th></tr></thead><tbody></tbody></table></div></div></div>
+        
+        <div id="section-setting-system" class="content-view d-none">
+            <h3 class="mb-4 text-gray-800" data-i18n="menu_st_system">Thiết Lập Hệ Thống</h3>
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="qrSwitch" checked><label class="form-check-label">Kích hoạt Quét QR Code</label></div>
+                    <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="maintSwitch"><label class="form-check-label">Chế độ Bảo Trì Hệ Thống</label></div>
+                    <hr>
+                    <button class="btn btn-warning me-2">Sao Lưu</button><button class="btn btn-danger">Khởi Động Lại</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Sửa Thông Tin Xe</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="editForm"><div class="mb-3"><label>Biển Số</label><input type="text" id="editPlate" class="form-control" readonly></div><div class="mb-3"><label>Chủ Xe</label><input type="text" id="editOwner" class="form-control"></div><div class="mb-3"><label>CCCD</label><input type="text" id="editCCCD" class="form-control"></div><div class="mb-3"><label>Loại Xe</label><select id="editType" class="form-select"><option>Ô tô</option><option>Xe máy</option></select></div><div class="mb-3"><label>Loại Thẻ</label><select id="editCard" class="form-select"><option>Vé Tháng</option><option>Thẻ VIP</option></select></div><div class="mb-3"><label>Hết Hạn</label><input type="text" id="editExpiry" class="form-control"></div></form></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button class="btn btn-success" onclick="updateVehicle()">Lưu</button></div></div></div></div>
+<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title" id="userModalTitle">Thêm Nhân Viên Mới</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="userForm"><div class="mb-3"><label class="form-label">Tên Đăng Nhập</label><input type="text" id="userUsername" class="form-control"></div><div class="mb-3"><label class="form-label">Họ và Tên</label><input type="text" id="userFullname" class="form-control"></div><div class="mb-3"><label class="form-label">Mật Khẩu</label><input type="password" id="userPassword" class="form-control" placeholder="Để trống nếu không đổi"></div><div class="mb-3"><label class="form-label">Nhập Lại Mật Khẩu</label><input type="password" id="userConfirmPass" class="form-control"></div><div class="mb-3"><label class="form-label">Chức Vụ</label><select id="userRole" class="form-select"><option value="Admin">Admin (Quản Lý)</option><option value="Security">Bảo Vệ</option><option value="Accountant">Kế Toán</option></select></div></form></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button class="btn btn-success" onclick="saveUser()">Lưu Tài Khoản</button></div></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript">function googleTranslateElementInit() { new google.translate.TranslateElement({ pageLanguage: 'vi', includedLanguages: 'vi,en,zh-CN,ja,ko', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_element'); }</script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script>
+    // --- JS LOGIC (ALL KEPT) ---
+    function previewLogo(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('previewLogoSetting').src = e.target.result; localStorage.setItem('siteLogo', e.target.result); updateLogoDisplay(e.target.result); }; reader.readAsDataURL(input.files[0]); } }
+    function updateLogoDisplay(src) { if(src) { document.getElementById('sidebarLogoDisplay').src = src; document.getElementById('loginLogoDisplay').src = src; } }
+    function previewMedia(input, previewId) { const previewElement = document.getElementById(previewId); if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { previewElement.src = e.target.result; previewElement.classList.add('active'); }; reader.readAsDataURL(input.files[0]); } }
+    function changeLanguageCustom(langCode) { const langNames = { 'vi': 'Tiếng Việt', 'en': 'English', 'zh-CN': '中文', 'ja': '日本語', 'ko': '한국어' }; if(langNames[langCode]) document.getElementById('currentLang').innerText = langNames[langCode] + "..."; function tryTranslate(count) { var combo = document.querySelector('.goog-te-combo'); if (combo) { combo.value = langCode; combo.dispatchEvent(new Event('change')); document.getElementById('currentLang').innerText = langNames[langCode]; } else { if (count < 20) { setTimeout(function() { tryTranslate(count + 1); }, 500); } } } tryTranslate(0); }
+
+    const translations = { vi: { system_name: "Hệ Thống Quản Lý Bãi Đỗ Xe Thông Minh", hello: "Xin chào,", menu_dashboard: "Tổng Quan", menu_liveview: "Giám Sát", menu_vehicle: "Quản Lý Xe", menu_vehicle_list: "Danh Sách Xe", menu_vehicle_reg: "Đăng Ký Mới", menu_vehicle_renew: "Gia Hạn Vé", menu_report: "Báo Cáo & Doanh Thu", menu_equipment: "Quản Lý Thiết Bị", menu_setting: "Cấu Hình Hệ Thống", menu_st_general: "Thông Tin Bãi Xe", menu_st_rate: "Cấu Hình Giá Vé", menu_st_users: "Tài Khoản Nhân Viên", menu_st_system: "Thiết Lập Hệ Thống", card_car_onsite: "Xe Trong Bãi", card_revenue: "Doanh Thu Ngày", card_entry: "Lượt Xe Vào", card_alert: "Cảnh Báo", chart_traffic: "Biểu Đồ Lưu Lượng Xe" }, en: { system_name: "Smart Parking System", hello: "Hello,", menu_dashboard: "Dashboard", menu_liveview: "Live Monitor", menu_vehicle: "Vehicle Mgmt", menu_vehicle_list: "Vehicle List", menu_vehicle_reg: "Registration", menu_vehicle_renew: "Renewal", menu_report: "Reports & Revenue", menu_equipment: "Equipment", menu_setting: "System Settings", menu_st_general: "Parking Info", menu_st_rate: "Rate Setting", menu_st_users: "User Accounts", menu_st_system: "System Config", card_car_onsite: "Cars On Site", card_revenue: "Daily Revenue", card_entry: "Entries", card_alert: "Alerts", chart_traffic: "Traffic Flow Chart" }, cn: { system_name: "智能停车场管理系统", hello: "你好,", menu_dashboard: "仪表盘", menu_liveview: "实时监控", menu_vehicle: "车辆管理", menu_vehicle_list: "车辆列表", menu_vehicle_reg: "新车注册", menu_vehicle_renew: "续费", menu_report: "报表与收入", menu_equipment: "设备管理", menu_setting: "系统设置", menu_st_general: "停车场信息", menu_st_rate: "费率设置", menu_st_users: "用户管理", menu_st_system: "系统配置", card_car_onsite: "场内车辆", card_revenue: "今日收入", card_entry: "入场数量", card_alert: "警报", chart_traffic: "车流量图表" } };
+    if (!localStorage.getItem('users')) { localStorage.setItem('users', JSON.stringify([{ id: 1, username: 'admin', fullname: 'Admin Manager', role: 'Admin', password: '123' }])); }
+    let editingUserIndex = -1; let userModalObj = null;
+
+    function checkLogin() { const currentUser = JSON.parse(localStorage.getItem('currentUser')); if(currentUser) { document.getElementById('login-section').classList.add('d-none'); document.getElementById('wrapper').classList.remove('d-none'); document.getElementById('userDisplay').innerText = currentUser.fullname; loadSavedConfig(); renderUserTable(); loadReportData(); } }
+    function performLogin() { const userIn = document.getElementById('loginUser').value; const passIn = document.getElementById('loginPass').value; const users = JSON.parse(localStorage.getItem('users')); const validUser = users.find(u => u.username === userIn && u.password === passIn); if(validUser) { localStorage.setItem('currentUser', JSON.stringify(validUser)); location.reload(); } else { document.getElementById('loginError').classList.remove('d-none'); } }
+    function performLogout() { localStorage.removeItem('currentUser'); location.reload(); }
+    
+    function renderUserTable() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const tbody = document.getElementById('userTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = '';
+        users.forEach((u, index) => {
+            const row = tbody.insertRow();
+            let badgeClass = u.role === 'Admin' ? 'bg-danger' : (u.role === 'Security' ? 'bg-info' : 'bg-success');
+            let passHtml = (currentUser && currentUser.role === 'Admin') ? `<div class="input-group input-group-sm" style="width: 150px;"><input type="password" class="form-control" value="${u.password}" id="pass-${index}" readonly><button class="btn btn-outline-secondary" type="button" onclick="toggleTablePass(${index})"><i class="fas fa-eye" id="icon-${index}"></i></button></div>` : `<span class="text-muted">******</span>`;
+            row.innerHTML = `<td>${u.id}</td><td>${u.username}</td><td>${u.fullname}</td><td>${passHtml}</td><td><span class="badge ${badgeClass}">${u.role}</span></td><td><button class="btn btn-sm btn-warning" onclick="editUser(${index})"><i class="fas fa-edit"></i></button> ${u.username!=='admin'?`<button class="btn btn-sm btn-danger" onclick="deleteUser(${index})"><i class="fas fa-trash"></i></button>`:''}</td>`;
+        });
+    }
+    function toggleTablePass(index) { const input = document.getElementById(`pass-${index}`); const icon = document.getElementById(`icon-${index}`); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } else { input.type = "password"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } }
+    function openUserModal() { editingUserIndex = -1; document.getElementById('userForm').reset(); document.getElementById('userModalTitle').innerText = "Thêm Nhân Viên Mới"; document.getElementById('userUsername').readOnly = false; if (!userModalObj) userModalObj = new bootstrap.Modal(document.getElementById('userModal')); userModalObj.show(); }
+    function editUser(index) { editingUserIndex = index; const users = JSON.parse(localStorage.getItem('users')); const u = users[index]; document.getElementById('userUsername').value = u.username; document.getElementById('userUsername').readOnly = true; document.getElementById('userFullname').value = u.fullname; document.getElementById('userRole').value = u.role; document.getElementById('userPassword').value = ''; document.getElementById('userConfirmPass').value = ''; document.getElementById('userModalTitle').innerText = "Cập Nhật Thông Tin"; if (!userModalObj) userModalObj = new bootstrap.Modal(document.getElementById('userModal')); userModalObj.show(); }
+    function saveUser() { const username = document.getElementById('userUsername').value; const fullname = document.getElementById('userFullname').value; const role = document.getElementById('userRole').value; const password = document.getElementById('userPassword').value; const confirmPass = document.getElementById('userConfirmPass').value; let users = JSON.parse(localStorage.getItem('users')); if (editingUserIndex === -1) { if (!username || !password) { alert("Thiếu thông tin!"); return; } if (password !== confirmPass) { alert("Mật khẩu không khớp!"); return; } if (users.find(u => u.username === username)) { alert("User đã tồn tại!"); return; } const newId = users.length > 0 ? users[users.length - 1].id + 1 : 1; users.push({ id: newId, username, fullname, role, password }); alert("Đã tạo tài khoản!"); } else { if (password && password !== confirmPass) { alert("Mật khẩu không khớp!"); return; } users[editingUserIndex].fullname = fullname; users[editingUserIndex].role = role; if (password) users[editingUserIndex].password = password; alert("Đã cập nhật!"); const currentUser = JSON.parse(localStorage.getItem('currentUser')); if (currentUser && currentUser.username === username) { currentUser.fullname = fullname; localStorage.setItem('currentUser', JSON.stringify(currentUser)); document.getElementById('userDisplay').innerText = fullname; } } localStorage.setItem('users', JSON.stringify(users)); renderUserTable(); userModalObj.hide(); }
+    function deleteUser(index) { if (confirm("Xóa user này?")) { let users = JSON.parse(localStorage.getItem('users')); users.splice(index, 1); localStorage.setItem('users', JSON.stringify(users)); renderUserTable(); } }
+    function setLanguage(lang) { localStorage.setItem('selectedLang', lang); const langNames = { 'vi': 'Tiếng Việt', 'en': 'English', 'cn': '中文' }; document.getElementById('currentLang').innerText = langNames[lang]; document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if(translations[lang][key]) el.innerText = translations[lang][key]; }); }
+    function saveGeneralConfig() { const name = document.getElementById('confParkName').value; const cap = document.getElementById('confCapacity').value; document.getElementById('systemNameDisplay').innerText = name; document.getElementById('dashCapacity').innerText = cap; localStorage.setItem('parkName', name); localStorage.setItem('parkCap', cap); alert("Đã lưu!"); }
+    function loadSavedConfig() { 
+        const savedName = localStorage.getItem('parkName'); if(savedName) { document.getElementById('systemNameDisplay').innerText = savedName; document.getElementById('confParkName').value = savedName; } 
+        const savedCap = localStorage.getItem('parkCap'); if(savedCap) { document.getElementById('dashCapacity').innerText = savedCap; document.getElementById('confCapacity').value = savedCap; } 
+        const savedLogo = localStorage.getItem('siteLogo'); if(savedLogo) { updateLogoDisplay(savedLogo); }
+        setLanguage(localStorage.getItem('selectedLang') || 'vi'); 
+    }
+    function showSection(sectionId, element) { document.querySelectorAll('.content-view').forEach(div => div.classList.add('d-none')); document.getElementById(sectionId).classList.remove('d-none'); if(element) { document.querySelectorAll('.list-group-item').forEach(link => link.classList.remove('active')); element.classList.add('active'); } }
+    
+    // --- UPDATED LOGIC (CCCD HIDDEN, TABLE, SEARCH) ---
+    function saveNewVehicle() { 
+        const plate = document.getElementById('regPlate').value; 
+        const owner = document.getElementById('regOwner').value; 
+        const cccd = document.getElementById('regCCCD').value; 
+        const type = document.getElementById('regType').value; 
+        const card = document.getElementById('regCard').value; 
+        if(!plate || !owner) { alert("Thiếu thông tin!"); return; } 
+        const table = document.getElementById('vehicleTable').getElementsByTagName('tbody')[0]; 
+        const newRow = table.insertRow(); newRow.setAttribute('data-type', type); newRow.setAttribute('data-cccd', cccd);
+        const today = new Date(); today.setMonth(today.getMonth() + 1); const expiry = today.toLocaleDateString('vi-VN'); 
+        const now = new Date(); const entryTime = now.getHours() + ":" + String(now.getMinutes()).padStart(2,'0') + " " + now.getDate() + "/" + (now.getMonth()+1);
+        newRow.innerHTML = `<td>${plate}</td><td>${owner}</td><td>${type}</td><td data-card="${card}"><span class="badge ${card==='Vé Tháng'?'bg-primary':'bg-secondary'}">${card}</span></td><td>${entryTime}</td><td>-</td><td>${expiry}</td><td><button class="btn btn-sm btn-info text-white" onclick="editRow(this)"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteRow(this)"><i class="fas fa-trash"></i></button></td>`; 
+        alert("Đã thêm!"); document.getElementById('regForm').reset(); showSection('section-vehicle-list'); 
+    }
+
+    let editingRow = null; let renewalRow = null; let editModalObj = null;
+    function editRow(btn) { 
+        editingRow = btn.closest('tr'); const cells = editingRow.cells; 
+        document.getElementById('editPlate').value = cells[0].innerText; 
+        document.getElementById('editOwner').value = cells[1].innerText; 
+        document.getElementById('editCCCD').value = editingRow.getAttribute('data-cccd'); // Load CCCD từ data attribute
+        document.getElementById('editType').value = cells[2].innerText; 
+        document.getElementById('editExpiry').value = cells[6].innerText; 
+        if (!editModalObj) editModalObj = new bootstrap.Modal(document.getElementById('editModal')); editModalObj.show(); 
+    }
+    
+    function updateVehicle() { 
+        if (editingRow) { 
+            editingRow.cells[1].innerText = document.getElementById('editOwner').value; 
+            editingRow.setAttribute('data-cccd', document.getElementById('editCCCD').value); // Cập nhật CCCD ẩn
+            editingRow.cells[2].innerText = document.getElementById('editType').value; 
+            editingRow.cells[6].innerText = document.getElementById('editExpiry').value; 
+            alert("Cập nhật xong!"); editModalObj.hide(); editingRow = null; 
+        } 
+    }
+
+    function searchRenewal() { 
+        const input = document.getElementById('renewalSearchInput').value.toLowerCase(); 
+        const tr = document.getElementById('vehicleTable').getElementsByTagName('tr'); 
+        let found = false; 
+        document.getElementById('renewalResult').classList.add('d-none'); document.getElementById('renewalError').classList.add('d-none'); 
+        for (let i = 1; i < tr.length; i++) { 
+            const plate = tr[i].cells[0].innerText.toLowerCase();
+            const cccd = (tr[i].getAttribute('data-cccd') || "").toLowerCase(); // Lấy CCCD ẩn
+            if ((plate.includes(input) || cccd.includes(input)) && input !== "") { 
+                found = true; renewalRow = tr[i]; 
+                document.getElementById('resPlate').innerText = tr[i].cells[0].innerText; 
+                document.getElementById('resOwner').innerText = tr[i].cells[1].innerText; 
+                document.getElementById('resExpiry').innerText = tr[i].cells[6].innerText; 
+                document.getElementById('renewalResult').classList.remove('d-none'); break; 
+            } 
+        } 
+        if (!found) document.getElementById('renewalError').classList.remove('d-none'); 
+    }
+
+    function confirmRenewal() { if (renewalRow) { let currentExpStr = renewalRow.cells[6].innerText; let currentExpDate; if (currentExpStr === "-" || currentExpStr === "") currentExpDate = new Date(); else { const parts = currentExpStr.split('/'); currentExpDate = new Date(parts[2], parts[1] - 1, parts[0]); } currentExpDate.setMonth(currentExpDate.getMonth() + parseInt(document.getElementById('extendMonth').value)); const newExpStr = ("0" + currentExpDate.getDate()).slice(-2) + "/" + ("0" + (currentExpDate.getMonth() + 1)).slice(-2) + "/" + currentExpDate.getFullYear(); renewalRow.cells[6].innerText = newExpStr; document.getElementById('resExpiry').innerText = newExpStr; document.getElementById('resExpiry').classList.add('text-success'); alert(`Gia hạn: ${newExpStr}`); } }
+    function deleteRow(btn) { if(confirm("Xóa?")) btn.closest('tr').remove(); }
+    function filterTable() { const input = document.getElementById("filterInput").value.toLowerCase(); const typeFilter = document.getElementById("filterType").value; const tr = document.getElementById("vehicleTable").getElementsByTagName("tr"); for (let i = 1; i < tr.length; i++) { const tdPlate = tr[i].getElementsByTagName("td")[0]; const rowType = tr[i].getAttribute("data-type"); if (tdPlate) { const textPlate = tdPlate.innerText.toLowerCase(); const matchesText = textPlate.indexOf(input) > -1; const matchesType = (typeFilter === "all") || (typeFilter === rowType); tr[i].style.display = (matchesText && matchesType) ? "" : "none"; } } }
+    function loadReportData() { const revenueBody = document.getElementById('revenueTableBody'); revenueBody.innerHTML = ''; for (let i = 1; i <= 5; i++) { revenueBody.innerHTML += `<tr><td>${i}/10/2023</td><td>${(Math.random()*1000000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td><td>${(Math.random()*5000000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td><td><strong>${(Math.random()*6000000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong></td></tr>`; } const logsBody = document.getElementById('logsTableBody'); logsBody.innerHTML = ''; const plates = ['30F-555.66', '29A-123.45', '14B-888.88', '51C-678.90']; const types = ['Ô tô', 'Xe máy']; for (let i = 0; i < 10; i++) { const time = `10:${15+i} 25/10/2023`; const type = types[Math.floor(Math.random()*types.length)]; const gate = Math.random() > 0.5 ? '<span class="text-success">Làn Vào</span>' : '<span class="text-danger">Làn Ra</span>'; const status = Math.random() > 0.8 ? '<span class="badge bg-danger">Cảnh báo</span>' : '<span class="badge bg-success">Hợp lệ</span>'; logsBody.innerHTML += `<tr><td>${time}</td><td>${plates[Math.floor(Math.random()*plates.length)]}</td><td>${type}</td><td>${gate}</td><td><i class="fas fa-image text-primary cursor-pointer"></i></td><td>${status}</td></tr>`; } const ctxR = document.getElementById('revenueChart').getContext('2d'); new Chart(ctxR, { type: 'bar', data: { labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], datasets: [{ label: 'Doanh Thu (triệu VNĐ)', data: [12, 19, 3, 5, 2, 3, 10], backgroundColor: '#4e73df' }] } }); const ctxV = document.getElementById('vehicleTypeChart').getContext('2d'); new Chart(ctxV, { type: 'doughnut', data: { labels: ['Ô tô', 'Xe máy'], datasets: [{ data: [300, 50], backgroundColor: ['#4e73df', '#1cc88a'] }] } }); }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        checkLogin();
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        new Chart(ctx, { type: 'line', data: { labels: ['6h','8h','10h','12h','14h','16h','18h'], datasets: [{ label: 'Vào', data: [10,50,80,40,90,100,60], borderColor: '#4e73df', tension: 0.3 }] } });
+    });
+</script>
+
+</body>
+</html>

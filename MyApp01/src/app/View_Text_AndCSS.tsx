@@ -3,7 +3,7 @@ import React from 'react'
 import { View, Text, StyleSheet } from "react-native";
 const View_Text_AndCSS = () => {
   return (
-  <>
+  
     // View giống như div trong web, Text giống như p, span, h1, h2,... trong web
       <View style={styles.container}>
         <View >
@@ -13,7 +13,7 @@ const View_Text_AndCSS = () => {
         <Text style={styles.hello1}>Home Screen</Text>
         <Text style={{color: "blue", fontSize: 16}}>Home Screen</Text>
       </View>
-  </>
+  
   )
 }
 
