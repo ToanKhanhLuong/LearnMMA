@@ -9,7 +9,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: "#0066ff",
         tabBarInactiveTintColor: "#777",
         tabBarStyle: {
-          height: 100,
+          height: 90,
           backgroundColor: "#fff",
           position: "absolute",
           bottom: 0,
@@ -105,7 +105,7 @@ export default function TabLayout() {
           ),
         }}
       />
-  
+
       <Tabs.Screen
         name="profile"
         options={{

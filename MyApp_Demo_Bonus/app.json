@@ -1,27 +1,27 @@
 {
   "expo": {
-    "name": "MyApp_Demo_Bonus",
-    "slug": "MyApp_Demo_Bonus",
+    "name": "MyApp01",
+    "slug": "MyApp01",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myappdemobonus",
+    "icon": "./assets/images/HomeActive.png",
+    "scheme": "myapp01",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/ProfileActive.png"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/AllAppActive.png",
+        "backgroundImage": "./assets/images/AllAppDeactive.png",
+        "monochromeImage": "./assets/images/GameActive.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/GoldActive.png"
     },
     "plugins": [
       "expo-router",

@@ -1,23 +1,38 @@
+import { Ionicons } from "@expo/vector-icons";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
-  TextInput,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 export default function AllAppsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.searchRow}>
-        <TextInput
-          placeholder="Type feature's name"
-          placeholderTextColor="#aaa"
-          style={styles.searchInput}
-        />
+        <View style={styles.searchBox}>
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color="#9c9c9c"
+            style={styles.searchIcon}
+          />
 
-        <Text style={styles.gridIcon}>▦</Text>
+          <TextInput
+            placeholder="Type feature's name"
+            placeholderTextColor="#b3b3b3"
+            style={styles.searchInput}
+          />
+        </View>
+
+        <View style={styles.gridIcon}>
+          <View style={styles.square} />
+          <View style={styles.square} />
+          <View style={styles.square} />
+          <View style={styles.square} />
+        </View>
       </View>
 
       <Text style={styles.title}>All Apps</Text>
@@ -99,34 +114,33 @@ Colleagues can send you birthday wishes on myFPT."
 
         <Text style={styles.section}>NEWS</Text>
 
-<AppItem
-  icon={require("../../../assets/iconallapp/ic_favourite_news.png")}
-  title="News"
-  desc="A collection of latest news and notable events around the company"
-/>
+        <AppItem
+          icon={require("../../../assets/iconallapp/ic_favourite_news.png")}
+          title="News"
+          desc="A collection of latest news and notable events around the company"
+        />
 
-<AppItem
-  icon={require("../../../assets/iconallapp/ic_favourite_star_ave.png")}
-  title="Star Ave"
-  desc="Recognise notable achievements within a business unit or within FPT"
-/>
+        <AppItem
+          icon={require("../../../assets/iconallapp/ic_favourite_star_ave.png")}
+          title="Star Ave"
+          desc="Recognise notable achievements within a business unit or within FPT"
+        />
 
-<Text style={styles.section}>WIKI</Text>
+        <Text style={styles.section}>WIKI</Text>
 
-<AppItem
-  icon={require("../../../assets/iconallapp/ic_favourite_employee_info.png")}
-  title="Employee Info"
-  desc="Basic, non-confidential employee information (name, gender, department, etc.)"
-/>
+        <AppItem
+          icon={require("../../../assets/iconallapp/ic_favourite_employee_info.png")}
+          title="Employee Info"
+          desc="Basic, non-confidential employee information (name, gender, department, etc.)"
+        />
 
-<Text style={styles.section}>GAME</Text>
+        <Text style={styles.section}>GAME</Text>
 
-<AppItem
-  icon={require("../../../assets/iconallapp/ic_favourite_game.png")}
-  title="Game"
-  desc="Community-engaging games with Gold as rewards"
-/>
-
+        <AppItem
+          icon={require("../../../assets/iconallapp/ic_favourite_game.png")}
+          title="Game"
+          desc="Community-engaging games with Gold as rewards"
+        />
       </ScrollView>
     </View>
   );
@@ -167,18 +181,43 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  searchInput: {
+  searchBox: {
     flex: 1,
     height: 38,
-    backgroundColor: "#eee",
-    paddingHorizontal: 12,
-    fontSize: 14,
+    backgroundColor: "#f1f1f1",
+    borderRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+
+  searchIcon: {
+    marginRight: 6,
+  },
+
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: "#333",
+    paddingVertical: 0,
   },
 
   gridIcon: {
-    fontSize: 28,
-    color: "#777",
-    marginLeft: 12,
+    width: 24,
+    height: 24,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    alignContent: "space-between",
+    marginLeft: 10,
+  },
+
+  square: {
+    width: 11,
+    height: 11,
+    borderWidth: 1,
+    borderColor: "#030303",
+    borderRadius: 1,
   },
 
   title: {
