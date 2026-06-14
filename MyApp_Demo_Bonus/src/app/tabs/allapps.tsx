@@ -7,10 +7,11 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AllAppsScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.searchRow}>
         <View style={styles.searchBox}>
           <Ionicons
@@ -35,13 +36,12 @@ export default function AllAppsScreen() {
         </View>
       </View>
 
-      <Text style={styles.title}>All Apps</Text>
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.title}>All Apps</Text>
         <Text style={styles.section}>WORK</Text>
 
         <AppItem
@@ -142,7 +142,7 @@ Colleagues can send you birthday wishes on myFPT."
           desc="Community-engaging games with Gold as rewards"
         />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 45,
+    paddingTop: 12,
   },
 
   searchRow: {
@@ -233,6 +233,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
+    flexGrow: 1,
     paddingBottom: 100,
   },
 
