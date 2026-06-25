@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "335855528189",
+    "project_id": "bonus6-2c4ea",
+    "storage_bucket": "bonus6-2c4ea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335855528189:android:b0a67e8367eeb58d223694",
+        "android_client_info": {
+          "package_name": "com.bonus6.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "335855528189-0ni243q0o5fq471tl1tvu42pjpomoppc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzE4DTDrn4Rqj4QoBmoR0QBAdfD7YtnCc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "335855528189-0ni243q0o5fq471tl1tvu42pjpomoppc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
